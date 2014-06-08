@@ -1,0 +1,63 @@
+---
+layout: default
+title: CMSIS
+---
+<h2>{{ page.title }}</h2>
+<p>CMSIS简介
+CMSIS
+
+startup_stm32f10x_hd_mdkar.s
+
+初始化堆栈
+
+中断向量表
+
+Reset_Handler
+
+SystemInit
+
+参见: void SystemInit (void)
+
+main
+
+NMI_Handler
+
+.....
+
+system_stm32f10x.c
+
+#include "stm32f10x.h"
+
+#include "core_cm3.h"
+
+#include "system_stm32f10x.h"
+
+  #include "stm32f10x_conf.h"
+
+CPAL层，由ARM实现，包括对寄存器名称地址的定义，对核寄存器NVIC，调试子系统的访问接口定义以及对特殊用途寄存器的访问接口定义
+(#include "core_cm3.h")
+
+标准固件库配置函数
+(  #include "stm32f10x_conf.h")
+
+extern uint32_t SystemCoreClock;   
+extern void SystemInit(void);
+extern void SystemCoreClockUpdate(void);
+(#include "system_stm32f10x.h")
+
+void SystemInit (void)
+
+参见: SystemInit, static void SetSysClock(void)
+
+void SystemCoreClockUpdate (void)
+
+static void SetSysClock(void)
+
+参见: void SystemInit (void)
+
+中断号定义
+厂商对CM核的配置
+片上外设的定义
+(#include "stm32f10x.h")/p>
+
+<p>{{ page.date | date_to_string }}</p
