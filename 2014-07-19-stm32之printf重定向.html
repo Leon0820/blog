@@ -1,0 +1,54 @@
+---
+layout: default
+title: stm32之printf重定向
+---
+<h2>{{ page.title }}</h2>
+<p>在stm32平台上实现printf重定向的方式有两种，重定向至UART，或者通过JTAG的SW模式将printf重定向至SWO引脚输出。
+首先介绍第一种，重定向至UART，这种方式我们比较熟悉，ST官方提供的固件库中也是使用的这种方法。
+代码如下：在对UART进行初始化后，通过如下代码对printf进行重定向
+1.串口初始化
+USART_InitTypeDef USART_InitStructure;  
+USART_InitStructure.USART_BaudRate = 115200;  
+USART_InitStructure.USART_WordLength = USART_WordLength_8b;  
+USART_InitStructure.USART_StopBits = USART_StopBits_1;  
+USART_InitStructure.USART_Parity = USART_Parity_No;  
+USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;  
+USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;  
+STM_REDBULL_COMInit(COM1, &USART_InitStructure);  
+2.printf重定向至串口
+int fputc(int ch, FILE *f)  
+{  
+  USART_SendData(USART1, (uint8_t) ch);  
+  /* Loop until the end of transmission */  
+  while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)  
+  {}  
+  return ch;  
+}  
+3.通过printf输出调试信息
+printf("AD value = 0x%04X\r\n", AD_value);
+4.连接串口，通过串口调试助手等软件进行查看
+第二种是通过SWO引脚输出显示
+1.在源码中添加对ITM端口寄存器的定义
+#define ITM_Port8(n)    (*((volatile unsigned char *)(0xE0000000+4*n)))  
+#define ITM_Port16(n)   (*((volatile unsigned short*)(0xE0000000+4*n)))  
+#define ITM_Port32(n)   (*((volatile unsigned long *)(0xE0000000+4*n)))  
+  
+#define DEMCR           (*((volatile unsigned long *)(0xE000EDFC)))  
+#define TRCENA          0x01000000  
+2.通过如下代码将printf的输出重定向至ITM的Port 0
+int fputc(int ch, FILE *f)   
+{  
+  if (DEMCR & TRCENA) {  
+    while (ITM_Port32(0) == 0);  
+    ITM_Port8(0) = ch;  
+  }  
+  return(ch);  
+}  
+3.通过printf输出调试信息
+
+printf("AD value = 0x%04X\r\n", AD_value);  
+4.将Jtag设置为SW模式，并设置ITM的Port 0 获取信息。
+
+
+5.在调试状态下打开 View - Serial Windows - Debug (printf) Viewer 窗口，运行程序即可看到输出。</p>
+<p>{{ page.date | date_to_string }}</p>
